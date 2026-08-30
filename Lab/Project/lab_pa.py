@@ -1,7 +1,10 @@
 # Kenneth Irving (kenirv5642)
 # Date: 08-30-2026
 # Description: This program provides a menu for automating Excel spreadsheet tasks.
+
 from datetime import datetime
+# As far as I can tell, I'm allowed to use other modules.
+from pathlib import Path
 
 # Function to convert numerical data based on selected spreadsheet option
 def convertData(data):
@@ -14,36 +17,73 @@ def convertData(data):
     else:
         return data
 
-# Function to get user entries and display converted values
+# Function to insert/append comma-separated data into a CSV file with error handling
+def insertData(filePath, dataString):
+    try:
+        # Open file with append permissions ('a'), creating it if it does not exist
+        with open(filePath, 'a') as file:
+            file.write(dataString + "\n")
+        return True
+    except Exception as e:
+        print(f"Error writing to file '{filePath}': {e}")
+        return False
+
+# Function to display the contents and path of a CSV file using read permissions ('r') with error handling
+def viewData(filePath):
+    try:
+        print('')
+        print("=" * 50)
+        print(f"Path of the file being read: {filePath}")
+        print("=" * 50)
+        print("  -------------------- SOF ---------------------")
+        with open(filePath, 'r') as file:
+            contents = file.read()
+            print(contents)
+        print("  -------------------- EOF ---------------------")
+    except Exception as e:
+        print(f"Error reading file '{filePath}': {e}")
+
+# Function to get user entries, convert data, and store each entry into ZooData.csv
 def getInput():
-    numEntries = int(input("How many entries are you inputting? "))
-    print('')
-    for i in range(numEntries):
-        # Header/Border for each entry
-        print(('=' * 50))
+    try:
+        numEntries = int(input("How many entries are you inputting? "))
+        print('')
+        for i in range(numEntries):
+            # Header/Border for each entry
+            print(('=' * 50))
 
-        entryDate = input("Enter a date: ")
-        if userChoice == 1:
-            val = float(input("Enter the highest temp for the inputted date (in F): "))
+            entryDate = input("Enter a date: ")
+            if userChoice == 1:
+                val = float(input("Enter the highest temp for the inputted date (in F): "))
 
-        # From the way I read the instructions, this is only needed for
-        # the people that chose to do a weight or rainfallspreadsheet
-        # instead of temperature, but I added it just in case I'm wrong.
-        elif userChoice == 2:   
-            val = float(input("Enter the weight in lbs for the inputted date: "))
-        elif userChoice == 3:
-            val = float(input("Enter the rain amount in inches for the inputted date: "))
+            # From the way I read the instructions, this is only needed for
+            # the people that chose to do a weight or rainfallspreadsheet
+            # instead of temperature, but I added it just in case I'm wrong.
+            elif userChoice == 2:   
+                val = float(input("Enter the weight in lbs for the inputted date: "))
+            elif userChoice == 3:
+                val = float(input("Enter the rain amount in inches for the inputted date: "))
 
-        # Exit the program if the user selects an invalid menu option
-        else:
-            exit("Error: Invalid menu option selected. Exiting program...")
-        
-        # Function: convertData
-        # Argument Req.: data (numerical value to be converted)
-        # Expected Return Value: converted numerical value as a float
-        convertedVal = convertData(val)
-        
-        print(f"\nThe following was saved at {datetime.now()}: \nDate: {entryDate} \nValue: {val} \nConverted Value: {convertedVal}")
+            # Exit the program if the user selects an invalid menu option
+            else:
+                exit("Error: Invalid menu option selected. Exiting program...")
+            
+            # Function: convertData
+            # Argument Req.: data (numerical value to be converted)
+            # Expected Return Value: converted numerical value as a float
+            convertedVal = convertData(val)
+            
+            # Create comma-separated data string
+            dataString = f"{entryDate},{val},{convertedVal}"
+            
+            # Store the entry into ZooData.csv using insertData function
+            csvPath = "ZooData.csv"
+            writeSuccess = insertData(csvPath, dataString)
+            
+            if writeSuccess:
+                print(f"\nThe following data was saved at {datetime.now()}: {dataString}.")
+    except Exception as e:
+        print(f"Error processing input: {e}")
 
 print("kenirv5642's Excel Spreadsheet Automation Menu\n")
 
@@ -70,8 +110,11 @@ else:
 
 print('')
 
-# Call 'getInput' if option 1 was selected; otherwise, print an error message
+# Call 'getInput' if option 1 was selected, 'viewData' if option 2 was selected; otherwise, print an error message
 if userChoice == 1:
     getInput()
+elif userChoice == 2:
+    ZooDataFilePath = Path(__file__).parent / "ZooData.csv"
+    viewData(ZooDataFilePath)
 else:
     print("Error: The chosen functionality is not implemented yet")
