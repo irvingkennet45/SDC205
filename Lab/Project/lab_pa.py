@@ -5,12 +5,23 @@ from datetime import datetime
 
 print("kenirv5642's Excel Spreadsheet Automation Menu")
 
-# The next line retrieves the inputted option and stores into the variable called 'menuOptions'.
-menuOptions = int(input(""
-    "Choose a number from the following options\n"
-    "1. Option 1\n"
-    "2. Option 2\n"
-    "3. Option 3\n"
-    ))
+# Store the possible menu options in a list
+menuOptions = [
+    "Input Data",
+    "View Current Data",
+    "Generate Report"
+]
 
-print(f'You selected {menuOptions} at ', str(datetime.now()))
+print("Choose a number from the following options:")
+# Loop through menu options and print them to the console
+for index, option in enumerate(menuOptions, start=1):
+    print(f"{index}. {option}")
+
+# Retrieve user choice
+userChoice = int(input("\nEnter your choice: "))
+
+# Using if-else statement to determine if user input is a valid menu option
+if 1 <= userChoice <= len(menuOptions):
+    print(f"You selected {userChoice} at", str(datetime.now()))
+else:
+    print("Error: Invalid choice selected.")
