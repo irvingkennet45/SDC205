@@ -1,6 +1,6 @@
 # Kenneth Irving (kenirv5642)
 # Date: 08-30-2026
-# Description:
+# Description: This program provides a menu for automating Excel spreadsheet tasks.
 from datetime import datetime
 
 print("kenirv5642's Excel Spreadsheet Automation Menu")
