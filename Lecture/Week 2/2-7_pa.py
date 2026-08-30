@@ -1,6 +1,6 @@
 # Kenneth Irving (kenirv5642)
 # Date: 08-30-2026
-# Description:
+# Description: Implements a number guessing game and demonstrates the use of 'while' and 'for' loops.
 
 # =============== Inputs ===============
 # --- Initial questions ---
