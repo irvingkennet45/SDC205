@@ -5,6 +5,8 @@
 from datetime import datetime
 # As far as I can tell, I'm allowed to use other modules.
 from pathlib import Path
+from openpyxl import Workbook
+from openpyxl.chart import BarChart, LineChart, Reference
 
 # Function to convert numerical data based on selected spreadsheet option
 def convertData(data):
@@ -85,6 +87,115 @@ def getInput():
     except Exception as e:
         print(f"Error processing input: {e}")
 
+# Function: createChart
+# Arguements Req.: filePath (path to the CSV data file), chartType (type of chart to create: 'line' or 'bar')
+# Argument Types: filePath (str or Path), chartType (str)
+# Expected Return Value: None (creates and saves chart in final.xlsx)
+def createChart(filePath, chartType):
+    try:
+        # Ask the user to choose data source
+        print("\nChoose data source for the chart:")
+        print("1. Initial Data (Fahrenheit)")
+        print("2. Converted Data (Celsius)")
+        sourceChoice = int(input("\nEnter choice (1 or 2): "))
+
+        # Open the CSV file and extract data with type casting
+        rows = []
+        with open(filePath, 'r') as file:
+            for line in file:
+                line = line.strip()
+                if line:
+                    parts = line.split(',')
+                    if len(parts) >= 3:
+                        entryDate = parts[0].strip()
+                        initialVal = float(parts[1].strip())
+                        convertedVal = float(parts[2].strip())
+                        rows.append([entryDate, initialVal, convertedVal])
+
+        if not rows:
+            print("Error: No data found in the CSV file.")
+            return
+
+        # Using openpyxl, create workbook and write data
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "ZooData"
+
+        # Append headers
+        ws.append(["Date", "Initial Data", "Converted Data"])
+
+        # Append data rows
+        for row in rows:
+            ws.append(row)
+
+        # Select data column and axis title based on user selection
+        if sourceChoice == 1:
+            valCol = 2
+            yAxisTitle = "Initial Value (F)"
+        elif sourceChoice == 2:
+            valCol = 3
+            yAxisTitle = "Converted Value (C)"
+        else:
+            print("Invalid choice. Defaulting to initial data.")
+            valCol = 2
+            yAxisTitle = "Initial Value (F)"
+
+        # Define data and categories references
+        dataRef = Reference(ws, min_col=valCol, min_row=1, max_row=len(rows) + 1)
+        catsRef = Reference(ws, min_col=1, min_row=2, max_row=len(rows) + 1)
+
+        # Instantiate chart based on chartType argument
+        if chartType.lower() == 'bar':
+            chart = BarChart()
+            chart.type = "col"
+            chart.style = 10
+        else:
+            chart = LineChart()
+            chart.style = 13
+
+        # Configure chart title and axis labels (<student ID> <current date>)
+        studentID = "kenirv5642"
+        currentDate = datetime.now().strftime("%m/%d/%Y")
+        chart.title = f"{studentID} {currentDate}"
+        chart.x_axis.title = "Date"
+        chart.y_axis.title = yAxisTitle
+
+        chart.add_data(dataRef, titles_from_data=True)
+        chart.set_categories(catsRef)
+
+        # Place chart on worksheet
+        ws.add_chart(chart, "E2")
+
+        # Save spreadsheet titled final.xlsx
+        outputFilePath = Path(filePath).parent / "final.xlsx"
+        wb.save(outputFilePath)
+        print(f"\nReport successfully generated and saved to '{outputFilePath}'")
+    except Exception as e:
+        print(f"Error creating chart: {e}")
+
+# Function: generateReport
+# Arguments Req.: filePath (path to the CSV data file)
+# Argument Types: filePath (str or Path)
+# Expected Return Value: None (prompts user for chart type and calls createChart)
+def generateReport(filePath):
+    try:
+        print("\nChoose a chart type to generate:")
+        print("1. Line Chart")
+        print("2. Bar Chart")
+        chartChoice = input("Enter choice (1 for Line, 2 for Bar, or 'line'/'bar'): ").strip().lower()
+
+        if chartChoice in ['1', 'line']:
+            chartType = 'line'
+        elif chartChoice in ['2', 'bar']:
+            chartType = 'bar'
+        else:
+            print("Invalid chart choice. Defaulting to line chart.")
+            chartType = 'line'
+
+        createChart(filePath, chartType)
+    except Exception as e:
+        print(f"Error generating report: {e}")
+
 print("kenirv5642's Excel Spreadsheet Automation Menu\n")
 
 # Store the possible menu options in a list
@@ -110,11 +221,14 @@ else:
 
 print('')
 
-# Call 'getInput' if option 1 was selected, 'viewData' if option 2 was selected; otherwise, print an error message
+# Call 'getInput' if option 1 was selected, 'viewData' if option 2 was selected, 'generateReport' if option 3 was selected; otherwise, print an error message
 if userChoice == 1:
     getInput()
 elif userChoice == 2:
     ZooDataFilePath = Path(__file__).parent / "ZooData.csv"
     viewData(ZooDataFilePath)
+elif userChoice == 3:
+    ZooDataFilePath = Path(__file__).parent / "ZooData.csv"
+    generateReport(ZooDataFilePath)
 else:
     print("Error: The chosen functionality is not implemented yet")
